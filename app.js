@@ -1,6 +1,7 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
+const cron = require("node-cron");
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const dotenv = require('dotenv').config();
@@ -8,6 +9,8 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var userRoutes = require('./routes/user_routes');
 var keywordRoutes = require('./routes/keyword_routes');
+var Keyword = require('./models/keywordmodel');
+const request = require('request');
 var app = express();
 
 // view engine setup
@@ -29,6 +32,20 @@ app.use('/keyword',keywordRoutes);
 app.use(function(req, res, next) {
   next(createError(404));
 });
+
+cron.schedule("* * * * *", function() {
+  Keyword.find().then(result => {
+    for(var i = 0;i<result.length;i++)
+    {
+      request('https://jobs.github.com/positions.json?description=${result[i].keyword}', { json: true }, (err, res, body) => {
+    if (err) { return console.log(err); }
+    console.log(res);
+    console.log(body);
+    });
+    }
+  })
+  });
+
 
 // error handler
 app.use(function(err, req, res, next) {

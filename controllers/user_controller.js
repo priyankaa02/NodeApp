@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt');
 var db = require('../database_config/db_connect');
 var moment = require('moment');
 const jwt = require('jsonwebtoken');
+let config = require('../config');
+
 
 exports.register = function(req, res) {
   bcrypt.hash(req.body.password, 10, function(err, hash){
@@ -51,9 +53,9 @@ exports.sign_in = function(req, res) {
       email: user.email,
       _id: user._id
     },
-    'secret',
+    config.secret,
      {
-       expiresIn: '2h'
+       expiresIn: '1m'
      });
      return res.status(200).json({
        success: 'Welcome to the Search App',
